@@ -1,24 +1,66 @@
 import type { IUser } from "@/modules/user/user.interface";
+import type { PaginatedResponse, PaginationQuery } from "@/ts/pagination.types";
 
+import { ErrorCodeEnum } from "@/enums/error-code.enum";
 import { logger } from "@/middlewares/pino-logger";
-import { NotFoundException } from "@/utils/app-error.utils";
+import { BadRequestException, NotFoundException } from "@/utils/app-error.utils";
 import { PaginationHelper } from "@/utils/pagination-helper";
 
 import UserModel from "./user.model";
 
 export class UserRepository {
-  // Get paginated users with search and filters
-  async getUsers(query: any) {
+  private readonly searchableFields = ["email"]; // Add more searchable fields as needed
+  private readonly sortableFields = ["email", "role", "createdAt", "updatedAt", "isActive"];
+
+  async getUsers(query: PaginationQuery): Promise<PaginatedResponse<IUser>> {
     const paginateOptions = PaginationHelper.parsePaginationParams(query);
-    const searchFields = ["email"];
 
-    const filter = PaginationHelper.createSearchFilter(query, searchFields);
+    const searchFilter = PaginationHelper.createSearchFilter(
+      query,
+      this.searchableFields,
+    );
 
-    const result = await UserModel.paginate(filter, paginateOptions);
-    logger.info(result, "Debugging rs");
-    const result1 = PaginationHelper.formatResponse(result);
-    logger.warn(result1, "Debugging rs1");
-    return result1;
+    if (query.role && typeof query.role === "string") {
+      const validRoles = ["golfer", "golf_club", "system_admin"];
+      if (validRoles.includes(query.role)) {
+        searchFilter.role = query.role;
+      }
+    }
+
+    if (query.isActive !== undefined) {
+      searchFilter.isActive = Boolean(query.isActive);
+    }
+
+    if (paginateOptions.sort) {
+      const sortKeys = Object.keys(paginateOptions.sort);
+
+      const invalidSortFields = sortKeys.filter(field => !this.sortableFields.includes(field));
+
+      if (invalidSortFields.length > 0) {
+        logger.warn(`Invalid sort fields: ${invalidSortFields.join(", ")}`);
+        throw new BadRequestException(
+          `Invalid sort fields: ${invalidSortFields.join(", ")}`,
+          ErrorCodeEnum.PAGINATION_INVALID_SORT_FIELD,
+        );
+      }
+    }
+
+    logger.info({ query, searchFilter, paginateOptions }, "User repository query");
+
+    if (query.isEmailVerified !== undefined) {
+      searchFilter.isEmailVerified = query.isEmailVerified === "true" || query.isEmailVerified === true;
+    }
+
+    const result = await UserModel.paginate(searchFilter, {
+      ...paginateOptions,
+      lean: true,
+      leanWithId: true,
+      populate: paginateOptions.populate,
+    });
+
+    logger.info({ result }, "User repository result");
+
+    return PaginationHelper.formatResponse(result);
   }
 
   async findUserById(userId: string): Promise<IUser> {

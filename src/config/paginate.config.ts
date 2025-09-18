@@ -10,10 +10,12 @@ const customLabels: CustomLabels = {
   totalDocs: "totalItems",
   docs: "data",
   limit: "itemsPerPage",
-  page: "currentPage",
-  nextPage: "next",
-  prevPage: "prev",
   totalPages: "pageCount",
+  page: "currentPage",
+  nextPage: "nextPage",
+  prevPage: "prevPage",
+  hasPrevPage: "hasPrev",
+  hasNextPage: "hasNext",
   pagingCounter: "slNo",
   meta: "pagination",
 };
@@ -26,12 +28,23 @@ export const defaultPaginateOptions: PaginateOptions = {
   leanWithId: true,
   sort: { createdAt: -1 },
   select: "",
-  populate: "", // This should be string or PopulateOptions
+  populate: "",
   customLabels,
   pagination: true,
-  useEstimatedCount: false,
+  useEstimatedCount: true,
   allowDiskUse: true,
+  maxTimeMS: 30000,
+  forceCountFn: true,
+  read: "secondaryPreferred",
+
 };
+
+export const PAGINATION_THRESHOLDS = {
+  CURSOR_PAGINATION_AFTER_PAGE: 100,
+  MAX_SEARCH_RESULTS: 10000,
+  SLOW_QUERY_THRESHOLD_MS: 1000,
+  MEMORY_WARNING_LIMIT: 1000,
+} as const;
 
 mongoosePaginate.paginate.options = defaultPaginateOptions;
 export { mongooseAggregatePaginate, mongoosePaginate };

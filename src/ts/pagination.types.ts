@@ -1,4 +1,3 @@
-/* eslint-disable ts/consistent-type-definitions */
 // file: src/ts/pagination.types.ts
 import type { Request } from "express";
 import type { AggregatePaginateModel, Document, PaginateModel } from "mongoose";
@@ -30,16 +29,16 @@ export interface AggregatePaginateOptions {
 }
 
 export interface PaginateResult<T> {
-  docs: T[];
-  totalDocs: number;
-  limit: number;
-  page?: number;
-  totalPages: number;
+  data?: T[];
+  totalItems: number;
+  itemsPerPage: number;
+  currentPage?: number;
+  pageCount: number;
   nextPage?: number | null;
   prevPage?: number | null;
-  pagingCounter: number;
-  hasPrevPage: boolean;
-  hasNextPage: boolean;
+  slNo: number;
+  hasPrev: boolean;
+  hasNext: boolean;
   meta?: any;
   [customLabel: string]: T[] | number | boolean | null | undefined;
 }

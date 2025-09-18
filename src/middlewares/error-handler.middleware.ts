@@ -56,6 +56,15 @@ function handleMongoDBError(error: any, requestId?: string) {
     };
   }
 
+  if (error.name === "MongooseError" && error.message.includes("skip")) {
+    return {
+      statusCode: HTTPSTATUS.BAD_REQUEST,
+      message: "Invalid pagination parameters",
+      errorCode: ErrorCodeEnum.PAGINATION_INVALID_PAGE, // Need to add this
+      requestId,
+    };
+  }
+
   // MongoDB Duplicate Key Error
   if (error.code === 11000) {
     const field = Object.keys(error.keyPattern)[0];

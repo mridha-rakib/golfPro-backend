@@ -6,7 +6,6 @@ import { userController } from "./user.controller";
 
 const router = Router();
 
-// User management routes (TODO: Add authentication middleware)
 router.get("/", authMiddleware.authenticate, authMiddleware.authorize(["golfer", "golf_club", "system_admin"]), userController.getUsers);
 router.get("/:id", authMiddleware.authenticate, authMiddleware.authorize(["golfer", "golf_club", "system_admin"]), userController.getUserById);
 router.patch("/:id", authMiddleware.authenticate, authMiddleware.authorize(["golfer", "golf_club", "system_admin"]), userController.updateUser);
