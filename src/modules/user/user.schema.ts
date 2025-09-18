@@ -60,7 +60,7 @@ export const getUsersSchema = z.object({
     search: z.string().trim().min(1).optional(),
     role: UserRoleEnum.optional(),
     isActive: z.enum(["true", "false"]).transform(val => val === "true").optional(),
-  }).optional(),
+  }),
 });
 
 // get user schema

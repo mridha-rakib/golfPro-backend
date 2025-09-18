@@ -17,10 +17,7 @@ export class UserController {
    */
   getUsers = asyncHandler(async (req: Request, res: Response, _next: NextFunction) => {
     const { query }: GetUsersInput = await zParse(getUsersSchema, req);
-
     const result = await userService.getUsers(query);
-
-    logger.debug(result, "Debugging");
 
     return res.status(HTTPSTATUS.OK).json(result);
   });
